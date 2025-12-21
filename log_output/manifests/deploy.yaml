@@ -12,8 +12,20 @@ spec:
       labels:
         app: log-output
     spec:
+      volumes:
+        - name: shared-logs
+          emptyDir: {}
       containers:
-      - name: log-output
-        image: kallepohjanjoki/log-output:v2
-        ports:
-        - containerPort: 8000
+        - name: generator
+          image: kallepohjanjoki/generator:v1.1
+          volumeMounts:
+            - name: shared-logs
+              mountPath: /usr/src/app/files
+
+        - name: provider
+          image: kallepohjanjoki/provider:v1
+          ports:
+            - containerPort: 8000
+          volumeMounts:
+            - name: shared-logs
+              mountPath: /usr/src/app/files
