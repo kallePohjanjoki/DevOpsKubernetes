@@ -4,6 +4,7 @@ import (
 	"crypto/rand"
 	"fmt"
 	"log"
+	"net/http"
 	"time"
 )
 
@@ -19,12 +20,20 @@ func generateRandomString() string {
 func main() {
 	randomID := generateRandomString()
 
-	ticker := time.NewTicker(5 * time.Second)
-	defer ticker.Stop()
+	go func() {
+		ticker := time.NewTicker(5 * time.Second)
+		defer ticker.Stop()
 
-	fmt.Printf("%s: %s\n", time.Now().Format(time.RFC3339Nano), randomID)
-
-	for range ticker.C {
 		fmt.Printf("%s: %s\n", time.Now().Format(time.RFC3339Nano), randomID)
-	}
+
+		for range ticker.C {
+			fmt.Printf("%s: %s\n", time.Now().Format(time.RFC3339Nano), randomID)
+		}
+	}()
+
+	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+		fmt.Fprintf(w, "%s: %s", time.Now().Format(time.RFC3339Nano), randomID)
+	})
+
+	log.Fatal(http.ListenAndServe(":8000", nil))
 }
